@@ -1,0 +1,143 @@
+<!Doctype html>
+<html>
+<head>
+<title>Handling Events</title>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+</head>
+<body>
+    <div id="root">
+
+    </div>
+    <!-- React元素在事件处理上和DOM元素相似，唯有一些语法区别 -->
+    <!-- React事件使用驼峰命名，而不是小写命名 -->
+    <button onclick="functionName()">
+        Activate Lasers
+    </button>
+    <!-- JSX传递函数作为事件处理，而不是字符串 -->
+    <script type="text/babel">
+        function button(props) {
+            return (
+                <button onClick={ functionName }>
+                    Activate Lasers
+                </button>
+            );
+        }
+    </script>
+    <!-- 另外一个不同之处就是在React中你无法通过返回false来阻止默认的行为，
+    你必须准确的调用preventDefault函数。比如，在简单的HTML中，要阻止默认的链接行
+    为打开一个新的窗口，你可以这样写 -->
+    <a href="#" onclick="console.log('the link was clicked.'); return false">
+        Click me
+    </a>
+    <!-- 在React中，你可以这样写 -->
+    <script type="text/babel">
+        function ActionLink() {
+            function handleClick(event) {
+                event.preventDefault();
+                console.log("The link was clicked.");
+            }
+
+            return (
+                <a href="#" onClick= { handleClick }>
+                    Click me
+                </a>
+            );
+        }
+    </script>
+    <!-- 其中event是一个合成的事件。React根据W3C标准来定义这些合成的事件，所以你
+    不需要担心浏览器兼容性。详情可以查看合成事件指导。 -->
+    <!-- 当使用React时，你一般不需要调用addEventListener函数来给DOM元素增加监听者，
+        在元素被创造后。相反，你可以提供一个监听者当元素在初始化渲染时。 -->
+    <!-- 当你使用ES6 Class来定义组件，一个通用的模式是在类中写一个函数来当做事件处理函数。
+        比如，这个Toggle组件渲染一个按钮让使用者切换"ON""OFF"的状态。 -->
+    <script type="text/babel">
+        class Toggle extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    Status : true,
+                };
+                //this binding is necessary to make 'this' work in the callback
+                this.handleClick = this.handleClick.bind(this);
+            };
+
+            handleClick() {
+                this.setState( state => ({
+                    Status: !state.Status
+                }));
+            }
+
+            render() {
+                return (
+                    <button onClick={ this.handleClick }>
+                        { this.state.Status?"ON":"OFF" }
+                    </button>
+                );
+            }
+        }
+
+        ReactDOM.render(
+            <Toggle />,
+            document.getElementById("root")
+        );
+    </script>
+    <!-- 在JSX的回调中需要小心使用this。JS中，类中不是默认绑定的。如果忘记绑定 this.handleClick
+    并且将它传给onClick，当函数调用的时候this.handleClick 将会是Undefined. -->
+    
+    <!-- 如果调用bind函数困扰你，有两个方法可以让你知道this。如果你使用实验性的公共类域语法，你可以
+    使用类域去正确绑定回调。 -->
+    <script type="text/babel">
+        class LoggingButton extends React.Component {
+            //This syntax ensures `this` is bound within handleClick
+            //warning: this is *experimental* syntax
+            handleClick = () => {
+                console.log('this is:', this);
+            }
+
+            render() {
+                return (
+                    <button onClick={ this.handleClick }>
+                        Click me
+                    </button>
+                );
+            }
+        }
+    </script>
+
+    <!-- 如果你不适用类域语法， 你可以在回调函数中使用箭头函数 -->
+    <script type="text/babel">
+        class LoggingButton extends React.Component {
+            handleClick() {
+                console.log('this is:', this);
+            }
+
+            render() {
+                //This syntax ensures `this` is bound within handleClick
+                return (
+                    <button onClick={ (event)=> this.handleClick(e)}>
+                        Click me
+                    </button>
+                );
+            }
+        }
+    </script>
+    <!-- 这样写的问题是每次在LoggingButton渲染时都会创造一个不同的回调函数。大多数情况
+    下，这是没有问题的。但是，如果这个回调是作为一个属性传递给下一级组件，那些组件可能会
+    做一个额外的渲染。一般建议使用在构造函数中绑定回调函数或者使用类域语法，就是为了避免
+    这种性能问题。 -->
+
+    <!-- 向事件处理函数传递参数 -->
+    <!-- 在循环中普遍想要给事件处理函数传递多余的参数。比如，如果id是一个行ID,下面的任一
+    写法都是正确的 -->
+    <script type="text/babel">
+        <button onClick={ (e) => this.deleteRow(id, e) }>Delete Row</button>
+        <button onClick={ this.deleteRow.bind(this, id)}>Delete Row</button>
+    </script>
+    <!-- 上面的两行是相同的，建议使用箭头函数和Function.prototype.bind() -->
+    <!-- 上面两个情况中，参数e代表了React事件将要作为第二个参数传递给函数。使用箭头函数，
+    可以准确地传递参数，但是使用bind任何多余的参数都会被在佛那个转发（but with bind any further
+    arguments are automatically forwarded， 感觉这句中forward理解的不对，求大佬指导）。 -->
+</body>
+</html>
