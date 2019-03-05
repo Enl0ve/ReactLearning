@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>   
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <style>
+        li {
+            display: inline;
+        }
+    </style>
+    </head>
+    <body>
+        <div id="root">
+
+        </div>
+
+        <script type="text/babel">
+            const scaleNames = {
+                'c':"Celsius",
+                'f':"fahrenheit"
+            };
+            
+            function convert2Celsius(input) {
+                return (input - 32)*5/9;
+            }
+
+            function convert2Fahrenheit(input) {
+                return (input*5/9) -32;
+            }
+
+            function convert(input, scale) {
+                const passedValue = parseFloat(input);
+                if(Number.isNaN(passedValue)){
+                    return '';
+                }
+
+                const output  = scale(passedValue);
+                const round = (output*1000)/1000;
+                return round.toString();
+            }
+
+            function BoilingVirdert(props) {
+                if(props.temperature > 100){
+                    return <p>the wwater can boil</p>;
+                }
+                
+                return <p>the water can not be boil</p>;
+            }
+
+            class TmpInput extends React.Component {
+                constructor(props){
+                    super(props);
+                    this.handleChange = this.handleChange.bind(this);
+                }
+
+                handleChange(e){
+                    this.props.onTemperatureChange(e.target.value);
+                }
+
+                render() {
+                    const scale = this.props.scale;
+                    const temperature = this.props.temperature;
+                    return (
+                        <fieldset>
+                            <legend> Enter temperature in {scaleNames[scale]}</legend>
+                            <input value={temperature} onChange={this.handleChange}/>
+                        </fieldset>
+                    );
+                }
+            }
+
+            class Caculator extends React.Component {
+                constructor(props){
+                    super(props);
+                    this.state = {
+                        temperature:'',
+                        scale:'c'
+                    }
+                    this.handleCelsiusChange = this.handleCelsiusChange.bind(this);
+                    this.handleFahrenheitChange = this.handleFahrenheitChange.bind(this);
+                }
+
+                handleCelsiusChange(value) {
+                    this.setState({temperature: value, scale:'c'});
+                }
+
+                handleFahrenheitChange(value) {
+                    this.setState({temperature: value, scale:'f'});
+                }
+
+                render() {
+                    const scale = this.state.scale;
+                    const temperature = this.state.temperature;
+                    const Celsius = scale==='f'?convert(temperature, convert2Celsius):temperature;
+                    const fahrenheit = scale==='c'?convert(temperature, convert2Fahrenheit):temperature;
+
+                    return (
+                        <div>
+                            <TmpInput scale={'c'} temperature={Celsius} onTemperatureChange={this.handleCelsiusChange}/>
+                            <TmpInput scale={'f'} temperature={fahrenheit} onTemperatureChange={this.handleFahrenheitChange} />
+                            <BoilingVirdert temperature={parseFloat(Celsius)}/>
+                        </div>
+                    );   
+                }
+            }
+
+            ReactDOM.render(
+                <Caculator />,
+                document.getElementById('root')
+            );
+        </script>
+    </body>
+</html>
