@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js"></script>   
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+    <style>
+        label{
+            display: block;
+        }
+    </style>
+    </head>
+    <body>
+        <div id="root">
+
+        </div>
+
+        <script type="text/babel">
+            const price = {
+                    "kabuqinuo":15,
+                    "blackCoffee":20,
+                    "natie":10
+            }
+            
+            class MultiCheckbox extends React.Component {
+                constructor(props) {
+                    super(props);
+                    this.handleCheck = this.handleCheck.bind(this);
+                    this.state = {
+                        coffee:[]
+                    }
+                }
+
+                handleCheck(e) {
+                    const {checked, value} = e.target;
+                    let {coffee} = this.state;
+                    if(checked && coffee.indexOf(value) == -1){
+                        coffee.push(value);
+                    }else if(!checked && coffee.indexOf(value) != -1){
+                        coffee.pop();
+                    }
+                    
+                    this.setState({
+                        coffee: coffee
+                    });
+                }
+                
+                Caculator() {
+                    const coffee = this.state.coffee;
+                    if(coffee){
+                        let Price = 0;
+                        React.Children.forEach(coffee, (el) => Price+=price[el]);
+                        return Price;
+                    }
+
+                    return false;
+                }
+
+                shouldComponentUpdate(){
+                    const price = this.refs.price;
+                    const dom = ReactDOM.findDOMNode(price);
+                    if(this.state.coffee.length > 0){
+                        dom.innerText = `The all Price: ${this.Caculator()}`;
+                    }else{
+                        dom.innerText = '';
+                    }
+                    return true;
+                }
+
+                render() {
+                    const coffee = this.state.coffee;
+                    return (
+                        <div>
+                            <label>
+                                <input type="checkbox" value={"kabuqinuo"} checked={coffee.indexOf("kabuqinuo") != -1} onClick={this.handleCheck}/>kabuqinuo
+                            </label>
+                            <label>
+                                <input type="checkbox" value={"blackCoffee"} checked={coffee.indexOf("blackCoffee") != -1} onClick={this.handleCheck}/>blackCoffee
+                            </label>
+                            <label>
+                                <input type="checkbox" value={"natie"} checked={coffee.indexOf("natie") != -1} onClick={this.handleCheck}/>natie
+                            </label>
+                            <div ref="price">
+                            </div>
+                        </div>
+                    );
+                }
+            }
+
+            ReactDOM.render(
+                <div>
+                    <MultiCheckbox />
+                </div>,
+                document.getElementById('root')
+            );
+        </script>
+    </body>
+</html>
